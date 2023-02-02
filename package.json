@@ -37,9 +37,13 @@
     "style-loader": "^3.3.1",
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.1",
-    "webpack-dev-server": "^4.11.1"
+    "webpack-dev-server": "^4.11.1",
+    "webpack-watch-files-plugin": "^1.2.1"
   },
   "dependencies": {
-    "bootstrap": "^5.2.3"
+    "bootstrap": "^5.2.3",
+    "on-change": "^4.0.2",
+    "onchange": "^7.1.0",
+    "yup": "^0.32.11"
   }
 }

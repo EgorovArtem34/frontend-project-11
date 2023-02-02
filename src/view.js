@@ -1,10 +1,11 @@
-const formRender = (elements, value) => {
+import locales from './locales/index.js';
+
+const formRender = (elements, value, i18nextInstance) => {
   switch (value) {
     case 'sending':
-      console.log('Зашли в сенд');
       elements.input.classList.remove('is-invalid');
       elements.feedback.classList.replace('text-danger', 'text-success');
-      elements.feedback.textContent = 'RSS успешно загружен';
+      elements.feedback.textContent = i18nextInstance.t('successAdd');
       elements.input.value = '';
       break;
     case 'error':
@@ -18,21 +19,13 @@ const formRender = (elements, value) => {
   }
 };
 
-const Allerrors = {
-  errors: {
-    notOneOf: 'RSS уже существует',
-    url: 'Ссылка должна быть валидным URL',
-  },
-};
-
-export default (state, elements) => (path, value) => {
+export default (state, elements, i18nextInstance) => (path, value) => {
   switch (path) {
     case 'processState':
-      console.log('processState!', value);
-      formRender(elements, value);
+      formRender(elements, value, i18nextInstance);
       break;
     case 'errors':
-      elements.feedback.textContent = Allerrors.errors[value];
+      elements.feedback.textContent = i18nextInstance.t(`errors.${value}`);
       break;
     default:
       break;

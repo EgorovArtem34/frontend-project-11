@@ -1,7 +1,7 @@
 {
   "name": "my-webpack-project",
   "version": "1.0.0",
-  "description": "My webpack project",
+  "description": "Hexlet Frontend project lvl3",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -42,6 +42,7 @@
   },
   "dependencies": {
     "bootstrap": "^5.2.3",
+    "i18next": "^22.4.9",
     "on-change": "^4.0.2",
     "onchange": "^7.1.0",
     "yup": "^0.32.11"

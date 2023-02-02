@@ -2,10 +2,12 @@
 
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+// const { watch } = require('fs');
 
 const isProduction = process.env.NODE_ENV === 'production';
 
 const config = {
+  target: 'web',
   entry: './src/index.js',
   output: {
     path: path.resolve(__dirname, 'dist'),

@@ -2,13 +2,30 @@ import * as yup from 'yup';
 import onChange from 'on-change';
 import i18next from 'i18next';
 import render from './view.js';
+import axios from 'axios';
+import _ from 'lodash';
 import resources from './locales/index.js'
+import parser from './parser.js';
 
 const validate = (url, feeds) => {
   const schema = yup.string().url().required().notOneOf(feeds)
     .trim();
   return schema.validate(url);
 };
+
+const addProxy = (url) => {
+  const urlWithProxy = new URL('/get', 'https://allorigins.hexlet.app');
+  urlWithProxy.searchParams.set('url', url);
+  urlWithProxy.searchParams.set('disableCache', 'true');
+  return urlWithProxy;
+};
+const addIdToPosts = (posts, feedId) => {
+  posts.forEach((post) => {
+    post.feedId = feedId;
+    post.id = _.uniqueId();
+  });
+};
+
 export default () => {
   const defaultLanguage = 'ru';
   const i18nextInstance = i18next.createInstance();
@@ -18,7 +35,6 @@ export default () => {
     resources,
   })
     .then(() => {
-
       yup.setLocale({
         mixed: {
           notOneOf: 'alreadyExists',
@@ -50,9 +66,19 @@ export default () => {
         const valueFormData = formData.get('url').trim();
         validate(valueFormData, watchedState.feeds)
           .then((url) => {
-            watchedState.feeds.push(url);
             watchedState.errors = null;
             watchedState.processState = 'sending';
+            const proxy = addProxy(url);
+            axios.get(proxy)
+              .then((response) => {
+                const parseData = parser(response.data.contents);
+                const { feed, posts } = parseData;
+                const feedId = _.uniqueId();
+                feed.id = feedId;
+                addIdToPosts(posts, feedId);
+                watchedState.feeds.push(feed);
+                watchedState.posts.push(posts);
+              });
           })
           .catch((err) => {
             watchedState.errors = err.message;

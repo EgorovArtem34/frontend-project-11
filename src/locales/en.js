@@ -4,6 +4,7 @@ export default {
     errors: {
       alreadyExists: 'RSS already exists',
       invalidURL: 'Should be valid URL',
+      notContainRSS: 'need ADD some'
     },
   }
 }

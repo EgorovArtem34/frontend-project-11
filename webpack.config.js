@@ -8,6 +8,9 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 const config = {
   target: 'web',
+  watchOptions: {
+    poll: 1000, // Check for changes every second
+  },
   entry: './src/index.js',
   output: {
     path: path.resolve(__dirname, 'dist'),

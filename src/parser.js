@@ -1,6 +1,5 @@
 const getFeed = (doc) => {
   const title = doc.querySelector('title').textContent;
-  console.log(doc)
   const description = doc.querySelector('description').textContent;
   return { title, description };
 };
@@ -26,7 +25,7 @@ export default (content) => {
     console.log('error domparser');
     throw new Error('notContainRSS');
   }
-  console.log('no error domparser', err, '!!!!!!!!!!', doc);
+  console.log('noError-domparser', err, '!!!!!!!!!!', doc);
   const feed = getFeed(doc);
   const posts = getPosts(doc);
   return { feed, posts };

@@ -11,7 +11,7 @@ export default {
     errors: {
       alreadyExists: 'RSS уже существует',
       invalidURL: 'Ссылка должна быть валидным URL',
-      notContainRSS: 'need ADD some',
+      notContainRSS: 'Ресурс не содержит валидный RSS',
     },
   }
 }

@@ -9,7 +9,7 @@ const formRender = (elements, value, i18nextInstance) => {
       elements.input.value = '';
       break;
     case 'error':
-      console.log('formEror', value);
+      console.log('!!!!!!!', value);
       elements.input.classList.add('is-invalid');
       elements.feedback.classList.replace('text-success', 'text-danger');
       break;
@@ -18,7 +18,13 @@ const formRender = (elements, value, i18nextInstance) => {
       break;
   }
 };
-
+const errorRender = (elements, value, i18nextInstance) => {
+  if (value === null) {
+    return;
+  }
+  const errorText = value.message || value;
+  elements.feedback.textContent = i18nextInstance.t(`errors.${errorText}`);
+};
 const makeWrapper = (elements, type, values, i18nextInstance) => {
   elements[type].textContent = '';
   const wrapper = document.createElement('div');
@@ -31,11 +37,10 @@ const makeWrapper = (elements, type, values, i18nextInstance) => {
   titleDiv.classList.add('card-body');
   h2.classList.add('card-title', 'h4');
   h2.textContent = i18nextInstance.t(`${type}.title`);
-  // h2.textContent = i18nextInstance.t(`${type}.title`);
 
   elements[type].append(wrapper);
-  wrapper.append(ul);
   wrapper.append(titleDiv);
+  wrapper.append(ul);
   titleDiv.append(h2);
   if (type === 'feeds') {
     feedsRender(elements, values, wrapper, ul, i18nextInstance);
@@ -61,28 +66,33 @@ const feedsRender = (elements, feeds, wrapper, ul, i18nextInstance) => {
     ul.append(li);
     wrapper.append(ul);
   });
-}
+};
 const postsRender = (elements, posts, wrapper, ul, i18nextInstance) => {
+  console.log('postsRender', posts)
   posts.forEach((post) => {
     const li = document.createElement('li');
     const link = document.createElement('a');
     const btn = document.createElement('button');
 
     li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
-    link.classList.add('fw-normal', 'link-secondary');
+    link.classList.add('fw-bold');
     link.setAttribute('href', post.link);
     link.setAttribute('data-id', post.id);
     link.setAttribute('target', '_blank');
     link.setAttribute('rel', 'noopener noreferrer');
-    btn.outerHTML = `<button type="button" data-id="${post.id}" data-bs-toggle="modal" data-bs-target="#modal">${i18nextInstance.t('posts.button')}</button>`;
+    btn.setAttribute('type', 'button');
+    btn.setAttribute('data-id', post.id);
+    btn.setAttribute('data-bs-toggle', 'modal');
+    btn.setAttribute('data-bs-target', '#modal');
     btn.classList.add('btn', 'btn-outline-primary', 'btn-sm');
+    link.textContent = post.title;
+    btn.textContent = i18nextInstance.t('posts.button');
 
     li.append(link);
     li.append(btn);
     ul.append(li);
   });
-
-}
+};
 export default (state, elements, i18nextInstance) => (path, value) => {
   switch (path) {
     case 'processState':
@@ -90,8 +100,7 @@ export default (state, elements, i18nextInstance) => (path, value) => {
       formRender(elements, value, i18nextInstance);
       break;
     case 'errors':
-      console.log('eRRRRR', path, value)
-      elements.feedback.textContent = i18nextInstance.t(`errors.${value}`);
+      errorRender(elements, value, i18nextInstance);
       break;
     case 'feeds':
       makeWrapper(elements, 'feeds', value, i18nextInstance);

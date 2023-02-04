@@ -7,8 +7,8 @@ import _ from 'lodash';
 import resources from './locales/index.js'
 import parser from './parser.js';
 
-const validate = (url, feeds) => {
-  const schema = yup.string().url().required().notOneOf(feeds)
+const validate = (url, links) => {
+  const schema = yup.string().url().required().notOneOf(links)
     .trim();
   return schema.validate(url);
 };
@@ -64,23 +64,31 @@ export default () => {
         e.preventDefault();
         const formData = new FormData(e.target);
         const valueFormData = formData.get('url').trim();
-        validate(valueFormData, watchedState.feeds)
+        const linksForValidate = watchedState.feeds.map((feed) => feed.url);
+        validate(valueFormData, linksForValidate)
           .then((url) => {
             watchedState.errors = null;
-            watchedState.processState = 'sending';
             const proxy = addProxy(url);
             axios.get(proxy)
               .then((response) => {
                 const parseData = parser(response.data.contents);
+                watchedState.processState = 'sending';
                 const { feed, posts } = parseData;
                 const feedId = _.uniqueId();
                 feed.id = feedId;
+                feed.url = url;
                 addIdToPosts(posts, feedId);
-                watchedState.feeds.push(feed);
-                watchedState.posts.push(posts);
-              });
+                watchedState.feeds = [feed, ...state.feeds];
+                watchedState.posts = [...posts, ...state.posts];
+              })
+              .catch((err) => {
+                console.log('1 catch', err)
+                watchedState.errors = err;
+                watchedState.processState = 'error';
+              })
           })
           .catch((err) => {
+            console.log('ERRRcatch', err)
             watchedState.errors = err.message;
             watchedState.processState = 'error';
           });

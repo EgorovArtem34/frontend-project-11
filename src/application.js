@@ -71,16 +71,25 @@ export default () => {
         feedback: document.querySelector('.feedback'),
         feeds: document.querySelector('.feeds'),
         posts: document.querySelector('.posts'),
+        modal: {
+          modalEl: document.getElementById('modal'),
+          title: document.querySelector('.modal-title'),
+          body: document.querySelector('.modal-body'),
+          articleBtn: document.querySelector('.full-article'),
+        },
       };
       const state = {
         processState: 'filling',
         feeds: [],
         posts: [],
         errors: [],
+        uiState: {
+          viewedPosts: new Set(),
+          modalPost: null,
+        },
       };
 
       const watchedState = onChange(state, render(state, elements, i18nextInstance));
-
       elements.form.addEventListener('submit', (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
@@ -114,6 +123,16 @@ export default () => {
             watchedState.errors = err.message;
             watchedState.processState = 'error';
           });
+      });
+      elements.posts.addEventListener('click', (e) => {
+        const targetId = e.target.dataset.id;
+        if (targetId) {
+          watchedState.uiState.viewedPosts.add(targetId);
+        }
+      });
+      elements.modal.modalEl.addEventListener('show.bs.modal', (e) => {
+        const postId = e.relatedTarget.dataset.id;
+        watchedState.uiState.modalPost = postId;
       });
       updatePosts(watchedState);
     });

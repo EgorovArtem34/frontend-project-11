@@ -41,7 +41,8 @@ const feedsRender = (elements, feeds, wrapper, ul) => {
     wrapper.append(ul);
   });
 };
-const postsRender = (elements, posts, wrapper, ul, i18nextInstance) => {
+const postsRender = (elements, wrapper, ul, i18nextInstance, state) => {
+  const { posts } = state;
   console.log('postsRender', posts);
   posts.forEach((post) => {
     const li = document.createElement('li');
@@ -49,7 +50,7 @@ const postsRender = (elements, posts, wrapper, ul, i18nextInstance) => {
     const btn = document.createElement('button');
 
     li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
-    link.classList.add('fw-bold');
+    link.classList.add(state.uiState.viewedPosts.has(post.id) ? ('fw-normal', 'link-secondary') : 'fw-bold');
     link.setAttribute('href', post.link);
     link.setAttribute('data-id', post.id);
     link.setAttribute('target', '_blank');
@@ -67,7 +68,7 @@ const postsRender = (elements, posts, wrapper, ul, i18nextInstance) => {
     ul.append(li);
   });
 };
-const makeWrapper = (elements, type, values, i18nextInstance) => {
+const makeWrapper = (elements, type, values, i18nextInstance, state) => {
   elements[type].textContent = '';
   const wrapper = document.createElement('div');
   const ul = document.createElement('ul');
@@ -88,8 +89,15 @@ const makeWrapper = (elements, type, values, i18nextInstance) => {
     feedsRender(elements, values, wrapper, ul);
   }
   if (type === 'posts') {
-    postsRender(elements, values, wrapper, ul, i18nextInstance);
+    postsRender(elements, wrapper, ul, i18nextInstance, state);
   }
+};
+const modalRender = (state, elements, id) => {
+  const ActualPosts = state.posts.filter((post) => post.id === id);
+  const [{ description, link, title }] = ActualPosts;
+  elements.modal.title.textContent = description;
+  elements.modal.body.textContent = title;
+  elements.modal.articleBtn.setAttribute('href', link);
 };
 export default (state, elements, i18nextInstance) => (path, value) => {
   switch (path) {
@@ -104,7 +112,11 @@ export default (state, elements, i18nextInstance) => (path, value) => {
       makeWrapper(elements, 'feeds', value, i18nextInstance);
       break;
     case 'posts':
-      makeWrapper(elements, 'posts', value, i18nextInstance);
+    case 'uiState.viewedPosts':
+      makeWrapper(elements, 'posts', value, i18nextInstance, state);
+      break;
+    case 'uiState.modalPost':
+      modalRender(state, elements, value);
       break;
     default:
       console.log('DEFAULT', path, value);

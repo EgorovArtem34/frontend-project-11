@@ -1,5 +1,3 @@
-import locales from './locales/index.js';
-
 const formRender = (elements, value, i18nextInstance) => {
   switch (value) {
     case 'sending':
@@ -25,31 +23,7 @@ const errorRender = (elements, value, i18nextInstance) => {
   const errorText = value.message || value;
   elements.feedback.textContent = i18nextInstance.t(`errors.${errorText}`);
 };
-const makeWrapper = (elements, type, values, i18nextInstance) => {
-  elements[type].textContent = '';
-  const wrapper = document.createElement('div');
-  const ul = document.createElement('ul');
-  const titleDiv = document.createElement('div');
-  const h2 = document.createElement('h2');
-
-  wrapper.classList.add('card', 'border-0');
-  ul.classList.add('list-group', 'border-0', 'rounded-0');
-  titleDiv.classList.add('card-body');
-  h2.classList.add('card-title', 'h4');
-  h2.textContent = i18nextInstance.t(`${type}.title`);
-
-  elements[type].append(wrapper);
-  wrapper.append(titleDiv);
-  wrapper.append(ul);
-  titleDiv.append(h2);
-  if (type === 'feeds') {
-    feedsRender(elements, values, wrapper, ul, i18nextInstance);
-  }
-  if (type === 'posts') {
-    postsRender(elements, values, wrapper, ul, i18nextInstance);
-  }
-};
-const feedsRender = (elements, feeds, wrapper, ul, i18nextInstance) => {
+const feedsRender = (elements, feeds, wrapper, ul) => {
   feeds.forEach((feed) => {
     const li = document.createElement('li');
     const h3 = document.createElement('h3');
@@ -68,7 +42,7 @@ const feedsRender = (elements, feeds, wrapper, ul, i18nextInstance) => {
   });
 };
 const postsRender = (elements, posts, wrapper, ul, i18nextInstance) => {
-  console.log('postsRender', posts)
+  console.log('postsRender', posts);
   posts.forEach((post) => {
     const li = document.createElement('li');
     const link = document.createElement('a');
@@ -93,10 +67,34 @@ const postsRender = (elements, posts, wrapper, ul, i18nextInstance) => {
     ul.append(li);
   });
 };
+const makeWrapper = (elements, type, values, i18nextInstance) => {
+  elements[type].textContent = '';
+  const wrapper = document.createElement('div');
+  const ul = document.createElement('ul');
+  const titleDiv = document.createElement('div');
+  const h2 = document.createElement('h2');
+
+  wrapper.classList.add('card', 'border-0');
+  ul.classList.add('list-group', 'border-0', 'rounded-0');
+  titleDiv.classList.add('card-body');
+  h2.classList.add('card-title', 'h4');
+  h2.textContent = i18nextInstance.t(`${type}.title`);
+
+  elements[type].append(wrapper);
+  wrapper.append(titleDiv);
+  wrapper.append(ul);
+  titleDiv.append(h2);
+  if (type === 'feeds') {
+    feedsRender(elements, values, wrapper, ul);
+  }
+  if (type === 'posts') {
+    postsRender(elements, values, wrapper, ul, i18nextInstance);
+  }
+};
 export default (state, elements, i18nextInstance) => (path, value) => {
   switch (path) {
     case 'processState':
-      console.log('processState', path, value)
+      console.log('processState', path, value);
       formRender(elements, value, i18nextInstance);
       break;
     case 'errors':

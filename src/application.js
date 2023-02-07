@@ -1,10 +1,10 @@
 import * as yup from 'yup';
 import onChange from 'on-change';
 import i18next from 'i18next';
-import render from './view.js';
 import axios from 'axios';
 import _ from 'lodash';
-import resources from './locales/index.js'
+import render from './view.js';
+import resources from './locales/index.js';
 import parser from './parser.js';
 
 const validate = (url, links) => {
@@ -26,6 +26,27 @@ const addIdToPosts = (posts, feedId) => {
   });
 };
 
+const updatePosts = (watchedState) => {
+  const timeoutUpdate = 5000;
+  const promises = watchedState.feeds.map((feed) => {
+    const proxy = addProxy(feed.url);
+    return axios.get(proxy)
+      .then((response) => {
+        const parseData = parser(response.data.contents);
+        const { posts } = parseData;
+        const actualLinksPosts = watchedState.posts.map((post) => post.link);
+        const filteredPosts = posts.filter((post) => !actualLinksPosts.includes(post.link));
+        if (filteredPosts.length > 0) {
+          const newPosts = filteredPosts
+            .map((post) => ({ ...post, id: _.uniqueId(), feedId: feed.id }));
+          watchedState.posts = [...newPosts, ...watchedState.posts];
+        }
+      })
+      .catch((e) => console.log(`Error: ${e}`));
+  });
+  Promise.all(promises)
+    .finally(() => setTimeout(() => updatePosts(watchedState), timeoutUpdate));
+};
 export default () => {
   const defaultLanguage = 'ru';
   const i18nextInstance = i18next.createInstance();
@@ -80,18 +101,20 @@ export default () => {
                 addIdToPosts(posts, feedId);
                 watchedState.feeds = [feed, ...state.feeds];
                 watchedState.posts = [...posts, ...state.posts];
+                watchedState.processState = 'added';
               })
               .catch((err) => {
-                console.log('1 catch', err)
+                console.log('1 catch', err);
                 watchedState.errors = err;
                 watchedState.processState = 'error';
-              })
+              });
           })
           .catch((err) => {
-            console.log('ERRRcatch', err)
+            console.log('ERRRcatch', err);
             watchedState.errors = err.message;
             watchedState.processState = 'error';
           });
       });
+      updatePosts(watchedState);
     });
 };

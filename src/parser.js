@@ -19,7 +19,7 @@ const getPosts = (doc) => {
 
 export default (content) => {
   const parser = new DOMParser();
-  const doc = parser.parseFromString(content, "application/xml");
+  const doc = parser.parseFromString(content, 'application/xml');
   const err = doc.querySelector('parsererror');
   if (err) {
     console.log('error domparser');

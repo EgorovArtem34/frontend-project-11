@@ -7,12 +7,11 @@ const formRender = (elements, value, i18nextInstance) => {
       elements.input.value = '';
       break;
     case 'error':
-      console.log('!!!!!!!', value);
       elements.input.classList.add('is-invalid');
       elements.feedback.classList.replace('text-success', 'text-danger');
       break;
     default:
-      console.log('formDefault', value);
+      console.log('default', value);
       break;
   }
 };
@@ -23,7 +22,8 @@ const errorRender = (elements, value, i18nextInstance) => {
   const errorText = value.message || value;
   elements.feedback.textContent = i18nextInstance.t(`errors.${errorText}`);
 };
-const feedsRender = (elements, feeds, wrapper, ul) => {
+const feedsRender = (state, wrapper, ul) => {
+  const { feeds } = state;
   feeds.forEach((feed) => {
     const li = document.createElement('li');
     const h3 = document.createElement('h3');
@@ -41,9 +41,8 @@ const feedsRender = (elements, feeds, wrapper, ul) => {
     wrapper.append(ul);
   });
 };
-const postsRender = (elements, wrapper, ul, i18nextInstance, state) => {
+const postsRender = (state, ul, i18nextInstance) => {
   const { posts } = state;
-  console.log('postsRender', posts);
   posts.forEach((post) => {
     const li = document.createElement('li');
     const link = document.createElement('a');
@@ -68,7 +67,7 @@ const postsRender = (elements, wrapper, ul, i18nextInstance, state) => {
     ul.append(li);
   });
 };
-const makeWrapper = (elements, type, values, i18nextInstance, state) => {
+const makeWrapper = (state, elements, type, i18nextInstance) => {
   elements[type].textContent = '';
   const wrapper = document.createElement('div');
   const ul = document.createElement('ul');
@@ -86,10 +85,10 @@ const makeWrapper = (elements, type, values, i18nextInstance, state) => {
   wrapper.append(ul);
   titleDiv.append(h2);
   if (type === 'feeds') {
-    feedsRender(elements, values, wrapper, ul);
+    feedsRender(state, wrapper, ul);
   }
   if (type === 'posts') {
-    postsRender(elements, wrapper, ul, i18nextInstance, state);
+    postsRender(state, ul, i18nextInstance);
   }
 };
 const modalRender = (state, elements, id) => {
@@ -102,24 +101,22 @@ const modalRender = (state, elements, id) => {
 export default (state, elements, i18nextInstance) => (path, value) => {
   switch (path) {
     case 'processState':
-      console.log('processState', path, value);
       formRender(elements, value, i18nextInstance);
       break;
     case 'errors':
       errorRender(elements, value, i18nextInstance);
       break;
     case 'feeds':
-      makeWrapper(elements, 'feeds', value, i18nextInstance);
+      makeWrapper(state, elements, 'feeds', i18nextInstance);
       break;
     case 'posts':
     case 'uiState.viewedPosts':
-      makeWrapper(elements, 'posts', value, i18nextInstance, state);
+      makeWrapper(state, elements, 'posts', i18nextInstance);
       break;
     case 'uiState.modalPost':
       modalRender(state, elements, value);
       break;
     default:
-      console.log('DEFAULT', path, value);
       break;
   }
 };

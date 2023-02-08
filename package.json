@@ -1,5 +1,5 @@
 {
-  "name": "my-webpack-project",
+  "name": "@hexlet/code",
   "version": "1.0.0",
   "description": "Hexlet Frontend project lvl3",
   "main": "index.js",

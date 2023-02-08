@@ -15,17 +15,15 @@ const getPosts = (doc) => {
     posts.push(post);
   });
   return posts;
-}
+};
 
 export default (content) => {
   const parser = new DOMParser();
   const doc = parser.parseFromString(content, 'application/xml');
   const err = doc.querySelector('parsererror');
   if (err) {
-    console.log('error domparser');
     throw new Error('notContainRSS');
   }
-  console.log('noError-domparser', err, '!!!!!!!!!!', doc);
   const feed = getFeed(doc);
   const posts = getPosts(doc);
   return { feed, posts };

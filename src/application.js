@@ -59,6 +59,7 @@ export default () => {
       yup.setLocale({
         mixed: {
           notOneOf: 'alreadyExists',
+          required: 'required',
         },
         string: {
           url: 'invalidURL',
@@ -113,13 +114,12 @@ export default () => {
                 watchedState.processState = 'added';
               })
               .catch((err) => {
-                console.log('1 catch', err);
-                watchedState.errors = err;
+                console.log('1 error.name', err, err.name);
+                watchedState.errors = err.isAxiosError ? 'networkError' : err.message;
                 watchedState.processState = 'error';
               });
           })
           .catch((err) => {
-            console.log('ERRRcatch', err);
             watchedState.errors = err.message;
             watchedState.processState = 'error';
           });

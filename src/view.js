@@ -11,7 +11,6 @@ const formRender = (elements, value, i18nextInstance) => {
       elements.feedback.classList.replace('text-success', 'text-danger');
       break;
     default:
-      console.log('default', value);
       break;
   }
 };

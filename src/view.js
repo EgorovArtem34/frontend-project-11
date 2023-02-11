@@ -91,8 +91,8 @@ const makeWrapper = (state, elements, type, i18nextInstance) => {
   }
 };
 const modalRender = (state, elements, id) => {
-  const ActualPosts = state.posts.filter((post) => post.id === id);
-  const [{ description, link, title }] = ActualPosts;
+  const actualPosts = state.posts.filter((post) => post.id === id);
+  const [{ description, link, title }] = actualPosts;
   elements.modal.title.textContent = description;
   elements.modal.body.textContent = title;
   elements.modal.articleBtn.setAttribute('href', link);

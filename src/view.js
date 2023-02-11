@@ -21,7 +21,28 @@ const errorRender = (elements, value, i18nextInstance) => {
   const errorText = value.message || value;
   elements.feedback.textContent = i18nextInstance.t(`errors.${errorText}`);
 };
-const feedsRender = (state, wrapper, ul) => {
+const makeWrapper = (elements, type, i18nextInstance) => {
+  elements[type].textContent = '';
+  const wrapper = document.createElement('div');
+  const ul = document.createElement('ul');
+  const titleDiv = document.createElement('div');
+  const h2 = document.createElement('h2');
+
+  wrapper.classList.add('card', 'border-0');
+  ul.classList.add('list-group', 'border-0', 'rounded-0');
+  titleDiv.classList.add('card-body');
+  h2.classList.add('card-title', 'h4');
+  h2.textContent = i18nextInstance.t(`${type}.title`);
+
+  elements[type].append(wrapper);
+  wrapper.append(titleDiv);
+  wrapper.append(ul);
+  titleDiv.append(h2);
+  return [wrapper, ul];
+};
+const feedsRender = (state, elements, i18nextInstance) => {
+  const type = 'feeds';
+  const [wrapper, ul] = makeWrapper(elements, type, i18nextInstance);
   const { feeds } = state;
   feeds.forEach((feed) => {
     const li = document.createElement('li');
@@ -40,7 +61,9 @@ const feedsRender = (state, wrapper, ul) => {
     wrapper.append(ul);
   });
 };
-const postsRender = (state, ul, i18nextInstance) => {
+const postsRender = (state, elements, i18nextInstance) => {
+  const type = 'posts';
+  const [, ul] = makeWrapper(elements, type, i18nextInstance);
   const { posts } = state;
   posts.forEach((post) => {
     const li = document.createElement('li');
@@ -66,30 +89,6 @@ const postsRender = (state, ul, i18nextInstance) => {
     ul.append(li);
   });
 };
-const makeWrapper = (state, elements, type, i18nextInstance) => {
-  elements[type].textContent = '';
-  const wrapper = document.createElement('div');
-  const ul = document.createElement('ul');
-  const titleDiv = document.createElement('div');
-  const h2 = document.createElement('h2');
-
-  wrapper.classList.add('card', 'border-0');
-  ul.classList.add('list-group', 'border-0', 'rounded-0');
-  titleDiv.classList.add('card-body');
-  h2.classList.add('card-title', 'h4');
-  h2.textContent = i18nextInstance.t(`${type}.title`);
-
-  elements[type].append(wrapper);
-  wrapper.append(titleDiv);
-  wrapper.append(ul);
-  titleDiv.append(h2);
-  if (type === 'feeds') {
-    feedsRender(state, wrapper, ul);
-  }
-  if (type === 'posts') {
-    postsRender(state, ul, i18nextInstance);
-  }
-};
 const modalRender = (state, elements, id) => {
   const actualPosts = state.posts.filter((post) => post.id === id);
   const [{ description, link, title }] = actualPosts;
@@ -106,11 +105,11 @@ export default (state, elements, i18nextInstance) => (path, value) => {
       errorRender(elements, value, i18nextInstance);
       break;
     case 'feeds':
-      makeWrapper(state, elements, 'feeds', i18nextInstance);
+      feedsRender(state, elements, i18nextInstance);
       break;
     case 'posts':
     case 'uiState.viewedPosts':
-      makeWrapper(state, elements, 'posts', i18nextInstance);
+      postsRender(state, elements, i18nextInstance);
       break;
     case 'uiState.modalPost':
       modalRender(state, elements, value);

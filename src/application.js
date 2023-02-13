@@ -7,7 +7,7 @@ import render from './view.js';
 import resources from './locales/index.js';
 import parser from './parser.js';
 
-const validate = (url, links) => {
+const validate = async (url, links) => {
   const schema = yup.string().url().required().notOneOf(links)
     .trim();
   return schema.validate(url);
@@ -26,7 +26,7 @@ const addIdToPosts = (posts, feedId) => {
   });
 };
 
-const updatePosts = (watchedState) => {
+const updatePosts = async (watchedState) => {
   const timeoutUpdate = 5000;
   const promises = watchedState.feeds.map((feed) => {
     const proxy = addProxy(feed.url);
@@ -47,93 +47,83 @@ const updatePosts = (watchedState) => {
   Promise.all(promises)
     .finally(() => setTimeout(() => updatePosts(watchedState), timeoutUpdate));
 };
-export default () => {
+export default async () => {
   const defaultLanguage = 'ru';
   const i18nextInstance = i18next.createInstance();
-  i18nextInstance.init({
+  await i18nextInstance.init({
     lng: defaultLanguage,
     debug: true,
     resources,
-  })
-    .then(() => {
-      yup.setLocale({
-        mixed: {
-          notOneOf: 'alreadyExists',
-          required: 'required',
-        },
-        string: {
-          url: 'invalidURL',
-        },
-      });
+  });
+  yup.setLocale({
+    mixed: {
+      notOneOf: 'alreadyExists',
+      required: 'required',
+    },
+    string: {
+      url: 'invalidURL',
+    },
+  });
 
-      const elements = {
-        form: document.querySelector('.rss-form'),
-        input: document.querySelector('#url-input'),
-        feedback: document.querySelector('.feedback'),
-        feeds: document.querySelector('.feeds'),
-        posts: document.querySelector('.posts'),
-        modal: {
-          modalEl: document.getElementById('modal'),
-          title: document.querySelector('.modal-title'),
-          body: document.querySelector('.modal-body'),
-          articleBtn: document.querySelector('.full-article'),
-        },
-      };
-      const state = {
-        processState: 'filling',
-        feeds: [],
-        posts: [],
-        errors: [],
-        uiState: {
-          viewedPosts: new Set(),
-          modalPost: null,
-        },
-      };
+  const elements = {
+    form: document.querySelector('.rss-form'),
+    input: document.querySelector('#url-input'),
+    feedback: document.querySelector('.feedback'),
+    feeds: document.querySelector('.feeds'),
+    posts: document.querySelector('.posts'),
+    modal: {
+      modalEl: document.getElementById('modal'),
+      title: document.querySelector('.modal-title'),
+      body: document.querySelector('.modal-body'),
+      articleBtn: document.querySelector('.full-article'),
+    },
+  };
+  const state = {
+    processState: 'filling',
+    feeds: [],
+    posts: [],
+    errors: [],
+    uiState: {
+      viewedPosts: new Set(),
+      modalPost: null,
+    },
+  };
 
-      const watchedState = onChange(state, render(state, elements, i18nextInstance));
-      elements.form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const valueFormData = formData.get('url').trim();
-        const linksForValidate = watchedState.feeds.map((feed) => feed.url);
-        validate(valueFormData, linksForValidate)
-          .then((url) => {
-            watchedState.errors = null;
-            const proxy = addProxy(url);
-            axios.get(proxy)
-              .then((response) => {
-                const parseData = parser(response.data.contents);
-                watchedState.processState = 'sending';
-                const { feed, posts } = parseData;
-                const feedId = _.uniqueId();
-                feed.id = feedId;
-                feed.url = url;
-                addIdToPosts(posts, feedId);
-                watchedState.feeds = [feed, ...state.feeds];
-                watchedState.posts = [...posts, ...state.posts];
-                watchedState.processState = 'added';
-              })
-              .catch((err) => {
-                console.log('1 error.name', err, err.name);
-                watchedState.errors = err.isAxiosError ? 'networkError' : err.message;
-                watchedState.processState = 'error';
-              });
-          })
-          .catch((err) => {
-            watchedState.errors = err.message;
-            watchedState.processState = 'error';
-          });
-      });
-      elements.posts.addEventListener('click', (e) => {
-        const targetId = e.target.dataset.id;
-        if (targetId) {
-          watchedState.uiState.viewedPosts.add(targetId);
-        }
-      });
-      elements.modal.modalEl.addEventListener('show.bs.modal', (e) => {
-        const postId = e.relatedTarget.dataset.id;
-        watchedState.uiState.modalPost = postId;
-      });
-      updatePosts(watchedState);
-    });
+  const watchedState = onChange(state, render(state, elements, i18nextInstance));
+  elements.form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const valueFormData = formData.get('url').trim();
+    const linksForValidate = watchedState.feeds.map((feed) => feed.url);
+    try {
+      const url = await validate(valueFormData, linksForValidate);
+      watchedState.errors = null;
+      const proxy = addProxy(url);
+      const response = await axios.get(proxy);
+      const parseData = parser(response.data.contents);
+      watchedState.processState = 'sending';
+      const { feed, posts } = parseData;
+      const feedId = _.uniqueId();
+      feed.id = feedId;
+      feed.url = url;
+      addIdToPosts(posts, feedId);
+      watchedState.feeds = [feed, ...state.feeds];
+      watchedState.posts = [...posts, ...state.posts];
+      watchedState.processState = 'added';
+    } catch (err) {
+      watchedState.errors = err.isAxiosError ? 'networkError' : err.message;
+      watchedState.processState = 'error';
+    }
+  });
+  elements.posts.addEventListener('click', (e) => {
+    const targetId = e.target.dataset.id;
+    if (targetId) {
+      watchedState.uiState.viewedPosts.add(targetId);
+    }
+  });
+  elements.modal.modalEl.addEventListener('show.bs.modal', (e) => {
+    const postId = e.relatedTarget.dataset.id;
+    watchedState.uiState.modalPost = postId;
+  });
+  updatePosts(watchedState);
 };

@@ -29,8 +29,8 @@ const addIdToPosts = (posts, feedId) => {
 const updatePosts = async (watchedState) => {
   const timeoutUpdate = 5000;
   const promises = watchedState.feeds.map((feed) => {
-    const proxy = addProxy(feed.url);
-    return axios.get(proxy)
+    const preparedUrl = addProxy(feed.url);
+    return axios.get(preparedUrl)
       .then((response) => {
         const parseData = parser(response.data.contents);
         const { posts } = parseData;
@@ -71,6 +71,7 @@ export default async () => {
     feedback: document.querySelector('.feedback'),
     feeds: document.querySelector('.feeds'),
     posts: document.querySelector('.posts'),
+    btnForm: document.querySelector('.col-auto > button'),
     modal: {
       modalEl: document.getElementById('modal'),
       title: document.querySelector('.modal-title'),
@@ -79,7 +80,7 @@ export default async () => {
     },
   };
   const state = {
-    processState: 'filling',
+    formState: 'filling',
     feeds: [],
     posts: [],
     errors: [],
@@ -96,23 +97,23 @@ export default async () => {
     const valueFormData = formData.get('url').trim();
     const linksForValidate = watchedState.feeds.map((feed) => feed.url);
     try {
-      const url = await validate(valueFormData, linksForValidate);
+      watchedState.formState = 'start sending';
+      const validatedUrl = await validate(valueFormData, linksForValidate);
       watchedState.errors = null;
-      const proxy = addProxy(url);
-      const response = await axios.get(proxy);
+      const preparedUrl = addProxy(validatedUrl);
+      const response = await axios.get(preparedUrl);
       const parseData = parser(response.data.contents);
-      watchedState.processState = 'sending';
       const { feed, posts } = parseData;
       const feedId = _.uniqueId();
       feed.id = feedId;
-      feed.url = url;
+      feed.url = validatedUrl;
       addIdToPosts(posts, feedId);
       watchedState.feeds = [feed, ...state.feeds];
       watchedState.posts = [...posts, ...state.posts];
-      watchedState.processState = 'added';
+      watchedState.formState = 'added';
     } catch (err) {
       watchedState.errors = err.isAxiosError ? 'networkError' : err.message;
-      watchedState.processState = 'error';
+      watchedState.formState = 'error';
     }
   });
   elements.posts.addEventListener('click', (e) => {

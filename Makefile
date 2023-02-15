@@ -4,5 +4,5 @@ publish:
 		npm publish --dry-run
 lint:
 	npx eslint .
-webpack:
+develop:
 	npx webpack serve

@@ -1,14 +1,24 @@
+const enableInput = (elements) => {
+  elements.btnForm.removeAttribute('disabled');
+  elements.input.removeAttribute('readonly');
+};
 const formRender = (elements, value, i18nextInstance) => {
   switch (value) {
-    case 'sending':
+    case 'start sending':
+      elements.btnForm.setAttribute('disabled', '');
+      elements.input.setAttribute('readonly', true);
+      break;
+    case 'added':
       elements.input.classList.remove('is-invalid');
       elements.feedback.classList.replace('text-danger', 'text-success');
       elements.feedback.textContent = i18nextInstance.t('successAdd');
       elements.input.value = '';
+      enableInput(elements);
       break;
     case 'error':
       elements.input.classList.add('is-invalid');
       elements.feedback.classList.replace('text-success', 'text-danger');
+      enableInput(elements);
       break;
     default:
       break;
@@ -98,7 +108,7 @@ const modalRender = (state, elements, id) => {
 };
 export default (state, elements, i18nextInstance) => (path, value) => {
   switch (path) {
-    case 'processState':
+    case 'formState':
       formRender(elements, value, i18nextInstance);
       break;
     case 'errors':

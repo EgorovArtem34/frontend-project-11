@@ -6,6 +6,7 @@ import _ from 'lodash';
 import render from './view.js';
 import resources from './locales/index.js';
 import parser from './parser.js';
+import yupLocale from './locales/yupLocale.js';
 
 const validate = async (url, links) => {
   const schema = yup.string().url().required().notOneOf(links)
@@ -17,7 +18,7 @@ const addProxy = (url) => {
   const urlWithProxy = new URL('/get', 'https://allorigins.hexlet.app');
   urlWithProxy.searchParams.set('url', url);
   urlWithProxy.searchParams.set('disableCache', 'true');
-  return urlWithProxy;
+  return urlWithProxy.toString();
 };
 const addIdToPosts = (posts, feedId) => {
   posts.forEach((post) => {
@@ -55,15 +56,7 @@ export default async () => {
     debug: true,
     resources,
   });
-  yup.setLocale({
-    mixed: {
-      notOneOf: 'alreadyExists',
-      required: 'required',
-    },
-    string: {
-      url: 'invalidURL',
-    },
-  });
+  yup.setLocale(yupLocale);
 
   const elements = {
     form: document.querySelector('.rss-form'),

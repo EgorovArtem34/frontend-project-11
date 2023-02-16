@@ -27,7 +27,7 @@
     "@webpack-cli/generators": "^3.0.1",
     "babel-loader": "^9.1.2",
     "css-loader": "^6.7.3",
-    "eslint": "^8.33.0",
+    "eslint": "^8.34.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.27.5",
     "html-webpack-plugin": "^5.5.0",
@@ -47,7 +47,6 @@
     "i18next": "^22.4.9",
     "lodash": "^4.17.21",
     "on-change": "^4.0.2",
-    "onchange": "^7.1.0",
     "yup": "^0.32.11"
   }
 }
